@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "functions": {
+    "api/analisar-link.js": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/analisar-link",
+      "headers": [
+        {"key": "Cache-Control", "value": "no-store"},
+        {"key": "Access-Control-Allow-Origin", "value": "*"},
+        {"key": "Access-Control-Allow-Methods", "value": "GET,POST,OPTIONS"},
+        {"key": "Access-Control-Allow-Headers", "value": "Content-Type"}
+      ]
+    }
+  ]
+}
