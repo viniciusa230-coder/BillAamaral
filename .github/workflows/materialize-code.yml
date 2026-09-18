@@ -1,0 +1,53 @@
+name: Materializar todo o codigo historico
+
+on:
+  push:
+    paths:
+      - ".github/workflows/materialize-code.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reconstruir arquivo completo
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat archives/LicitaGestao_Todo_Codigo_Historico.tar.xz.b64.part* \
+            | tr -d '\r\n' \
+            | base64 -d > /tmp/LicitaGestao_Todo_Codigo_Historico.tar.xz
+          mkdir -p /tmp/licita-historico
+          tar -xJf /tmp/LicitaGestao_Todo_Codigo_Historico.tar.xz -C /tmp/licita-historico
+
+      - name: Materializar fontes no repositorio
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf versions prototypes legacy
+          cp -a /tmp/licita-historico/versions ./versions
+          cp -a /tmp/licita-historico/prototypes ./prototypes
+          cp -a /tmp/licita-historico/legacy ./legacy
+          cp /tmp/licita-historico/README_CODE_ARCHIVE.md ./README_CODE_ARCHIVE.md
+
+      - name: Commitar fontes materializadas
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "viniciusa230-coder"
+          git config user.email "viniciusa230@gmail.com"
+          git add versions prototypes legacy README_CODE_ARCHIVE.md
+          if git diff --cached --quiet; then
+            echo "Nenhuma alteracao para commitar."
+            exit 0
+          fi
+          git commit -m "Materializar todo o codigo historico do LicitaGestao"
+          git push origin HEAD:main
