@@ -1,7 +1,7 @@
 const VERSION = 'radar-1.0.0';
 const PNCP_BASE = 'https://pncp.gov.br/api/consulta/v1';
 const MAX_MODALITIES = 30;
-const MAX_PAGES_PER_MODALITY = 2;
+const MAX_PAGES_PER_MODALITY = 12;
 const TIMEOUT_MS = 12000;
 
 function clean(v=''){ return String(v ?? '').replace(/\s+/g,' ').trim(); }
@@ -134,12 +134,18 @@ function normalize(x){
   };
 }
 async function modalities(){
-  try{
-    const data=await fetchJson(PNCP_BASE+'/modalidades?statusAtivo=true');
-    const list=listPayload(data);
-    const ids=list.map(x=>Number(x.id)).filter(Number.isFinite).slice(0,MAX_MODALITIES);
-    if(ids.length) return ids;
-  }catch{}
+  const sources=[
+    'https://pncp.gov.br/api/pncp/v1/modalidades?statusAtivo=true',
+    PNCP_BASE+'/modalidades?statusAtivo=true'
+  ];
+  for(const url of sources){
+    try{
+      const data=await fetchJson(url);
+      const list=listPayload(data);
+      const ids=list.map(x=>Number(x.id)).filter(Number.isFinite).slice(0,MAX_MODALITIES);
+      if(ids.length) return ids;
+    }catch{}
+  }
   return [1,2,3,4,5,6,7,8,9,10,11,12,13];
 }
 async function collectPublished(from,to){
