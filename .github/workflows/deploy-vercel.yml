@@ -1,0 +1,44 @@
+name: Deploy LicitaGestao to Vercel
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "api/**"
+      - "package.json"
+      - "vercel.json"
+      - ".github/workflows/deploy-vercel.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check Vercel token
+        shell: bash
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "VERCEL_TOKEN secret is not configured."
+            exit 1
+          fi
+
+      - name: Link LicitaGestao project
+        shell: bash
+        run: |
+          mkdir -p .vercel
+          cat > .vercel/project.json <<'JSON'
+          {"orgId":"team_9DeRvPhHqawb99y1Vuelga7n","projectId":"prj_ZfMFfnK3TR9w9ff6lwI7Z1va8lxY"}
+          JSON
+
+      - name: Deploy production
+        shell: bash
+        run: npx vercel@latest deploy --prod --yes --token="$VERCEL_TOKEN"
